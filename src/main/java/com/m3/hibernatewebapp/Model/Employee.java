@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 
 
 
+
 /**
  *
  * @author MJ
@@ -19,6 +20,7 @@ public class Employee {
    
    @Id
    @GeneratedValue(strategy=GenerationType.IDENTITY)
+   @Column(name="empid")
    private int empid;
    
    @Column(name="Employeefname")

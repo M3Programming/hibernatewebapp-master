@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.hibernate.Transaction;
 
 /**
  *
@@ -26,6 +25,10 @@ import org.hibernate.Transaction;
 @WebServlet("/")
 public class EmployeeController extends HttpServlet {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 6754204919032219434L;
     private EmployeeDAO employeeDAO;
 
     public void init() {
@@ -33,25 +36,31 @@ public class EmployeeController extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        add(request, response);
+        try {
+            doGet(request, response);
+        } catch (ServletException ex) {
+            Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+
         String action = request.getServletPath();
         try {
             switch (action) {
+                case "/new":
+                    showNewForm(request, response);
+                    break;
                 case "/add":
-                    response.sendRedirect("add_employee.jsp");
+                    add(request, response);
                     break;
                 default:
                     listEmployee(request, response);
                     break;
-
             }
-
-        } catch (IOException ex) {
-            Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
+            throw new ServletException(ex);
+        } catch (IOException ex) {
             Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ServletException ex) {
             Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
@@ -68,12 +77,10 @@ public class EmployeeController extends HttpServlet {
         employee.setLastName(lastName);
         employee.setDepartment(department);
         employeeDAO.saveEmployee(employee);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("list");
         try {
             dispatcher.forward(request, response);
-        } catch (ServletException ex) {
-            Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+        } catch (ServletException | IOException ex) {
             Logger.getLogger(EmployeeController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -81,10 +88,17 @@ public class EmployeeController extends HttpServlet {
 
     private void listEmployee(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        List<Employee> listEmployee = employeeDAO.getAllEmployee();
-        request.setAttribute("/", listEmployee);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("Employee.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("Employee_list.jsp");
         dispatcher.forward(request, response);
-        
+
     }
+
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        RequestDispatcher dispatcher = request.getRequestDispatcher("add_employee.jsp");
+        dispatcher.forward(request, response);
+    }
+
+
+
 }
